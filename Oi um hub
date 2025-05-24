@@ -1,0 +1,58 @@
+-- Serviços
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.Name = "GardenHub"
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 300, 0, 200)
+Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+
+local PetBox = Instance.new("TextBox", Frame)
+PetBox.PlaceholderText = "Digite o nome do Pet"
+PetBox.Position = UDim2.new(0, 10, 0, 10)
+PetBox.Size = UDim2.new(0, 280, 0, 30)
+
+local PetButton = Instance.new("TextButton", Frame)
+PetButton.Text = "Pegar Pet"
+PetButton.Position = UDim2.new(0, 10, 0, 50)
+PetButton.Size = UDim2.new(0, 280, 0, 30)
+
+local FruitBox = Instance.new("TextBox", Frame)
+FruitBox.PlaceholderText = "Digite o nome da fruta"
+FruitBox.Position = UDim2.new(0, 10, 0, 90)
+FruitBox.Size = UDim2.new(0, 280, 0, 30)
+
+local FruitButton = Instance.new("TextButton", Frame)
+FruitButton.Text = "Pegar Semente"
+FruitButton.Position = UDim2.new(0, 10, 0, 130)
+FruitButton.Size = UDim2.new(0, 280, 0, 30)
+
+-- Funções
+local function pegarItem(nome, pasta)
+    local item = ReplicatedStorage:FindFirstChild(pasta):FindFirstChild(nome)
+    if item then
+        local clone = item:Clone()
+        clone.Parent = player.Backpack
+    else
+        warn("Item não encontrado: " .. nome)
+    end
+end
+
+PetButton.MouseButton1Click:Connect(function()
+    local nome = PetBox.Text
+    if nome and nome ~= "" then
+        pegarItem(nome, "Pets") -- Altere "Pets" para o nome correto da pasta no ReplicatedStorage
+    end
+end)
+
+FruitButton.MouseButton1Click:Connect(function()
+    local nome = FruitBox.Text
+    if nome and nome ~= "" then
+        pegarItem(nome .. "Seed", "Seeds") -- Supondo que o nome da semente seja fruta + "Seed"
+    end
+end)
