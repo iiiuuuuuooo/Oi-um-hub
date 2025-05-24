@@ -1,35 +1,27 @@
--- Spy de RemoteEvent e RemoteFunction
-local RS = game:GetService("ReplicatedStorage")
+-- Exemplo básico para Grow A Garden no Roblox
 
--- Função para logar no Delta e Roblox console
-local function logRemote(name, args)
-    local txt = "[SPY] " .. name
-    warn(txt)
-    print(txt)
-    for i, v in ipairs(args) do
-        local linha = "  Arg" .. i .. ": " .. tostring(v)
-        warn(linha)
-        print(linha)
-    end
+local player = game.Players.LocalPlayer
+local replicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Supondo que tenha um evento remoto para vender frutas
+local sellFruitEvent = replicatedStorage:WaitForChild("SellFruitEvent")
+
+-- Função para manipular venda de frutas
+sellFruitEvent.OnClientEvent:Connect(function(fruitType, amount)
+    -- Aqui você intercepta o valor da venda e altera para 100000000
+    -- Mas normalmente a venda é feita no servidor, então precisa manipular lá (server-side)
+    print("Venda detectada: ", fruitType, amount)
+    
+    -- Esse é um exemplo, normalmente você não pode alterar o valor direto no client,
+    -- o ideal é criar um script server-side para isso, se você tiver autorização.
+end)
+
+-- Duplica as sementes no inventário
+local seedsFolder = player:WaitForChild("SeedsInventory") -- Ajuste o nome conforme seu jogo
+
+for _, seed in pairs(seedsFolder:GetChildren()) do
+    local clone = seed:Clone()
+    clone.Parent = seedsFolder
 end
 
--- Hook RemoteEvent
-for _, r in pairs(RS:GetDescendants()) do
-    if r:IsA("RemoteEvent") then
-        local old = r.FireServer
-        r.FireServer = function(self, ...)
-            local args = {...}
-            logRemote("RemoteEvent: " .. self:GetFullName(), args)
-            return old(self, ...)
-        end
-    elseif r:IsA("RemoteFunction") then
-        local old = r.InvokeServer
-        r.InvokeServer = function(self, ...)
-            local args = {...}
-            logRemote("RemoteFunction: " .. self:GetFullName(), args)
-            return old(self, ...)
-        end
-    end
-end
-
-warn("[SPY] Monitoramento de RemoteEvents e RemoteFunctions ativado!")
+print("Sementes duplicadas!")
