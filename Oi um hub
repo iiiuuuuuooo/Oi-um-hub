@@ -1,27 +1,224 @@
--- Exemplo básico para Grow A Garden no Roblox
+-- Script Hub para Grow A Garden (base para você adaptar)
+-- Deve rodar no LocalScript (client-side) com autorização do servidor
 
-local player = game.Players.LocalPlayer
-local replicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
--- Supondo que tenha um evento remoto para vender frutas
-local sellFruitEvent = replicatedStorage:WaitForChild("SellFruitEvent")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
 
--- Função para manipular venda de frutas
-sellFruitEvent.OnClientEvent:Connect(function(fruitType, amount)
-    -- Aqui você intercepta o valor da venda e altera para 100000000
-    -- Mas normalmente a venda é feita no servidor, então precisa manipular lá (server-side)
-    print("Venda detectada: ", fruitType, amount)
-    
-    -- Esse é um exemplo, normalmente você não pode alterar o valor direto no client,
-    -- o ideal é criar um script server-side para isso, se você tiver autorização.
+-- UI Setup
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GrowGardenHub"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = ScreenGui
+
+-- Drag to move menu
+local dragging = false
+local dragInput, mousePos, framePos
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        mousePos = input.Position
+        framePos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
 end)
 
--- Duplica as sementes no inventário
-local seedsFolder = player:WaitForChild("SeedsInventory") -- Ajuste o nome conforme seu jogo
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
 
-for _, seed in pairs(seedsFolder:GetChildren()) do
-    local clone = seed:Clone()
-    clone.Parent = seedsFolder
+RunService.Heartbeat:Connect(function()
+    if dragging and dragInput then
+        local delta = dragInput.Position - mousePos
+        mainFrame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+titleBar.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -30, 1, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Grow A Garden Hub"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 18
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -30, 0, 2)
+closeButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 18
+closeButton.Parent = titleBar
+
+closeButton.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = not ScreenGui.Enabled
+end)
+
+-- Container for buttons
+local buttonContainer = Instance.new("Frame")
+buttonContainer.Size = UDim2.new(1, -20, 1, -40)
+buttonContainer.Position = UDim2.new(0, 10, 0, 35)
+buttonContainer.BackgroundTransparency = 1
+buttonContainer.Parent = mainFrame
+
+-- Utility function to create buttons
+local function createButton(text, parent, y)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.Position = UDim2.new(0, 0, 0, y)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 16
+    btn.Text = text
+    btn.Parent = parent
+    return btn
 end
 
-print("Sementes duplicadas!")
+-- Variables to toggle features
+local autoCollectEnabled = false
+local autoSellEnabled = false
+local autoBuyEnabled = false
+local autoDuplicateEnabled = false
+
+-- Example button - Auto Coletar frutas
+local btnAutoCollect = createButton("Auto Coletar Frutas: OFF", buttonContainer, 0)
+btnAutoCollect.MouseButton1Click:Connect(function()
+    autoCollectEnabled = not autoCollectEnabled
+    btnAutoCollect.Text = "Auto Coletar Frutas: " .. (autoCollectEnabled and "ON" or "OFF")
+end)
+
+-- Exemplo básico de função Auto Collect (você deve adaptar ao seu servidor)
+spawn(function()
+    while true do
+        wait(1)
+        if autoCollectEnabled then
+            -- Aqui você coloca o código para coletar frutas do servidor
+            -- Exemplo:
+            -- local fruits = workspace:FindFirstChild("Fruits")
+            -- if fruits then
+            --     for _, fruit in pairs(fruits:GetChildren()) do
+            --         if (fruit.Position - player.Character.HumanoidRootPart.Position).Magnitude < 20 then
+            --             firetouchinterest(player.Character.HumanoidRootPart, fruit, 0)
+            --             firetouchinterest(player.Character.HumanoidRootPart, fruit, 1)
+            --         end
+            --     end
+            -- end
+        end
+    end
+end)
+
+-- Auto Vender frutas
+local btnAutoSell = createButton("Auto Vender Frutas: OFF", buttonContainer, 50)
+btnAutoSell.MouseButton1Click:Connect(function()
+    autoSellEnabled = not autoSellEnabled
+    btnAutoSell.Text = "Auto Vender Frutas: " .. (autoSellEnabled and "ON" or "OFF")
+end)
+
+spawn(function()
+    while true do
+        wait(5)
+        if autoSellEnabled then
+            -- Código para teleportar na loja e vender as frutas
+            -- Exemplo:
+            -- player.Character.HumanoidRootPart.CFrame = CFrame.new(lojaPosition)
+            -- fireServer(venderEvento, argumentos)
+        end
+    end
+end)
+
+-- Auto Comprar sementes
+local btnAutoBuy = createButton("Auto Comprar Sementes: OFF", buttonContainer, 100)
+btnAutoBuy.MouseButton1Click:Connect(function()
+    autoBuyEnabled = not autoBuyEnabled
+    btnAutoBuy.Text = "Auto Comprar Sementes: " .. (autoBuyEnabled and "ON" or "OFF")
+end)
+
+spawn(function()
+    while true do
+        wait(10)
+        if autoBuyEnabled then
+            -- Código para teleportar na loja e comprar sementes selecionadas
+        end
+    end
+end)
+
+-- Duplicar itens
+local btnDuplicate = createButton("Duplicar Frutas e Sementes: OFF", buttonContainer, 150)
+btnDuplicate.MouseButton1Click:Connect(function()
+    autoDuplicateEnabled = not autoDuplicateEnabled
+    btnDuplicate.Text = "Duplicar Frutas e Sementes: " .. (autoDuplicateEnabled and "ON" or "OFF")
+end)
+
+spawn(function()
+    while true do
+        wait(10)
+        if autoDuplicateEnabled then
+            -- Código para duplicar itens (seeds, frutas, pets)
+            -- Isso depende de como o servidor armazena os itens
+        end
+    end
+end)
+
+-- Seleção de semente para comprar (menu simples)
+local seedSelectionLabel = Instance.new("TextLabel")
+seedSelectionLabel.Size = UDim2.new(1, 0, 0, 30)
+seedSelectionLabel.Position = UDim2.new(0, 0, 0, 200)
+seedSelectionLabel.BackgroundTransparency = 1
+seedSelectionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+seedSelectionLabel.Text = "Semente para Comprar:"
+seedSelectionLabel.Font = Enum.Font.SourceSans
+seedSelectionLabel.TextSize = 16
+seedSelectionLabel.Parent = buttonContainer
+
+local seedInput = Instance.new("TextBox")
+seedInput.Size = UDim2.new(1, 0, 0, 30)
+seedInput.Position = UDim2.new(0, 0, 0, 230)
+seedInput.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+seedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+seedInput.PlaceholderText = "Digite o nome da semente"
+seedInput.Font = Enum.Font.SourceSans
+seedInput.TextSize = 16
+seedInput.ClearTextOnFocus = false
+seedInput.Parent = buttonContainer
+
+-- Função para comprar a semente digitada (você deve adaptar)
+local function buySeed(seedName)
+    print("Comprando semente: " .. seedName)
+    -- Coloque aqui o código para comprar a semente no servidor
+end
+
+-- Comprar ao clicar no botão auto buy
+btnAutoBuy.MouseButton1Click:Connect(function()
+    if autoBuyEnabled then
+        buySeed(seedInput.Text)
+    end
+end)
