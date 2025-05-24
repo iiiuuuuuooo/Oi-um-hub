@@ -1,113 +1,15 @@
--- Serviços
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
 
--- GUI Principal
-local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "GardenScriptHub"
-
-local OpenButton = Instance.new("TextButton", ScreenGui)
-OpenButton.Text = "ABRIR HUB"
-OpenButton.Size = UDim2.new(0, 100, 0, 30)
-OpenButton.Position = UDim2.new(0, 10, 0, 10)
-OpenButton.BackgroundColor3 = Color3.fromRGB(60, 200, 100)
-OpenButton.TextColor3 = Color3.new(1,1,1)
-
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-MainFrame.Visible = false
-
-local CloseButton = Instance.new("TextButton", MainFrame)
-CloseButton.Text = "X"
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -35, 0, 5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-
--- Abrir/Fechar
-OpenButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = true
-end)
-CloseButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = false
-end)
-
--- Input de Pet
-local PetInput = Instance.new("TextBox", MainFrame)
-PetInput.PlaceholderText = "Digite o nome do PET (ex: RED FOX)"
-PetInput.Position = UDim2.new(0, 20, 0, 60)
-PetInput.Size = UDim2.new(0, 360, 0, 30)
-PetInput.BackgroundColor3 = Color3.fromRGB(50,50,50)
-PetInput.TextColor3 = Color3.new(1,1,1)
-
-local NomeInput = Instance.new("TextBox", MainFrame)
-NomeInput.PlaceholderText = "Digite o nome do Pet (ex: Bella)"
-NomeInput.Position = UDim2.new(0, 20, 0, 100)
-NomeInput.Size = UDim2.new(0, 360, 0, 30)
-NomeInput.BackgroundColor3 = Color3.fromRGB(50,50,50)
-NomeInput.TextColor3 = Color3.new(1,1,1)
-
--- Botão para pegar pet
-local PetButton = Instance.new("TextButton", MainFrame)
-PetButton.Text = "PEGAR PET"
-PetButton.Position = UDim2.new(0, 20, 0, 140)
-PetButton.Size = UDim2.new(0, 360, 0, 40)
-PetButton.BackgroundColor3 = Color3.fromRGB(80, 140, 255)
-PetButton.TextColor3 = Color3.new(1,1,1)
-
--- Lista de pets e nomes válidos (você pode ajustar se precisar)
-local petsValidos = {
-	["DRAGONFLY"]=true, ["RED FOX"]=true, ["PIG"]=true, ["GIANT ANT"]=true,
-	["SNAIL"]=true, ["CHICKEN ZOMBIE"]=true, ["NIGHT OWL"]=true,
-	["BLOOD OWL"]=true, ["RACCOON"]=true
-}
-
-local nomesValidos = {
-	["Bella"]=true, ["Bibi"]=true, ["Biggins"]=true, ["Biscuit"]=true,
-	["Cal"]=true, ["Calerie"]=true, ["Callie"]=true, ["Cappy"]=true,
-	["Ceri"]=true, ["ChaoChao"]=true, ["Cheeto"]=true, ["Chunk"]=true,
-	["Clia"]=true, ["Climmy"]=true, ["Colleen"]=true, ["Colly"]=true,
-	["Coppy"]=true, ["Daizy"]=true, ["Danny"]=true, ["Dani"]=true,
-	["Dazzy"]=true, ["Dumi"]=true, ["Dump"]=true, ["Ettle"]=true,
-	["Eliel"]=true, ["Elgusa"]=true, ["Etty"]=true, ["Fawny"]=true,
-	["Fernando"]=true, ["Flay"]=true, ["Geo"]=true, ["Georgie"]=true,
-	["Geya"]=true, ["Gigi"]=true, ["Gus"]=true, ["Gay"]=true,
-	["Jackie"]=true, ["Jae"]=true, ["Jaeda"]=true, ["Jaia"]=true,
-	["Jala"]=true, ["Janzy"]=true, ["Jax"]=true, ["Jazzy"]=true,
-	["Jiji"]=true, ["Jon"]=true, ["Joanie"]=true, ["Katie"]=true,
-	["Keana"]=true, ["Keeko"]=true, ["Kit"]=true, ["Kiki"]=true,
-	["Lani"]=true, ["Luma"]=true, ["Lump"]=true, ["Mali"]=true,
-	["Mally"]=true, ["Mimi"]=true, ["Malo"]=true, ["Mango"]=true,
-	["Mewi"]=true, ["Mimy"]=true, ["Mitch"]=true, ["Mossie"]=true,
-	["Nani"]=true, ["Neko"]=true, ["Ollie"]=true, ["Paya"]=true,
-	["Poe"]=true, ["Puffy"]=true, ["Roozy"]=true, ["Rya"]=true,
-	["Rylo"]=true, ["Sammi"]=true, ["Samira"]=true, ["Sammy"]=true,
-	["Samster"]=true, ["Shay"]=true, ["Suki"]=true, ["Simon"]=true,
-	["Tia"]=true, ["Tid"]=true, ["Tiggy"]=true, ["Tilla"]=true,
-	["Vivi"]=true, ["Witch"]=true, ["Winnle"]=true, ["Yusie"]=true,
-	["Yusi"]=true, ["Zaza"]=true, ["Zephy"]=true
-}
-
--- Lógica para pegar o Pet
-PetButton.MouseButton1Click:Connect(function()
-	local tipo = string.upper(PetInput.Text or "")
-	local nome = NomeInput.Text or ""
-
-	if petsValidos[tipo] and nomesValidos[nome] then
-		local petFolder = ReplicatedStorage:FindFirstChild("Pets")
-		if petFolder then
-			local modelo = petFolder:FindFirstChild(tipo)
-			if modelo then
-				local pet = modelo:Clone()
-				pet.Name = nome
-				pet.Parent = player.Backpack
-			else
-				warn("Modelo de pet não encontrado no ReplicatedStorage.")
-			end
-		end
-	else
-		warn("Pet ou nome inválido.")
-	end
-end)
+-- Espionar todos os RemoteEvents
+for _, v in pairs(rs:GetDescendants()) do
+    if v:IsA("RemoteEvent") then
+        local old; old = hookfunction(v.FireServer, function(self, ...)
+            local args = {...}
+            print("RemoteEvent chamado:", self:GetFullName())
+            for i, arg in ipairs(args) do
+                print("Arg", i, ":", arg)
+            end
+            return old(self, ...)
+        end)
+    end
+end
