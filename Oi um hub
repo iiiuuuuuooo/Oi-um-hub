@@ -1,15 +1,75 @@
-local rs = game:GetService("ReplicatedStorage")
+-- GUI principal
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "RemoteSpyGui"
 
--- Espionar todos os RemoteEvents
-for _, v in pairs(rs:GetDescendants()) do
-    if v:IsA("RemoteEvent") then
-        local old; old = hookfunction(v.FireServer, function(self, ...)
-            local args = {...}
-            print("RemoteEvent chamado:", self:GetFullName())
-            for i, arg in ipairs(args) do
-                print("Arg", i, ":", arg)
-            end
-            return old(self, ...)
-        end)
-    end
+-- Janela de espionagem
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 400, 0, 300)
+frame.Position = UDim2.new(0, 20, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+-- Botão para começar a espionar
+local button = Instance.new("TextButton", frame)
+button.Size = UDim2.new(1, 0, 0, 40)
+button.Text = "Espionar RemoteEvents"
+button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 20
+
+-- Área de console
+local scrolling = Instance.new("ScrollingFrame", frame)
+scrolling.Size = UDim2.new(1, 0, 1, -40)
+scrolling.Position = UDim2.new(0, 0, 0, 40)
+scrolling.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+scrolling.CanvasSize = UDim2.new(0, 0, 10, 0)
+scrolling.ScrollBarThickness = 8
+
+-- Armazenar pets detectados
+local spying = false
+local foundPets = {}
+local messageCount = 0
+
+-- Função para adicionar texto ao console
+local function addLine(text)
+	messageCount += 1
+	local label = Instance.new("TextLabel", scrolling)
+	label.Size = UDim2.new(1, -10, 0, 20)
+	label.Position = UDim2.new(0, 5, 0, 20 * (messageCount - 1))
+	label.Text = text
+	label.TextColor3 = Color3.fromRGB(200, 200, 200)
+	label.BackgroundTransparency = 1
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Font = Enum.Font.Code
+	label.TextSize = 16
+	scrolling.CanvasSize = UDim2.new(0, 0, 0, 20 * messageCount)
 end
+
+-- Botão ativado
+button.MouseButton1Click:Connect(function()
+	if spying then return end
+	spying = true
+	button.Text = "Espionando..."
+
+	local rs = game:GetService("ReplicatedStorage")
+	for _, remote in pairs(rs:GetDescendants()) do
+		if remote:IsA("RemoteEvent") then
+			local old; old = hookfunction(remote.FireServer, function(self, ...)
+				local args = {...}
+				addLine("Remote: " .. self:GetFullName())
+				for i, arg in ipairs(args) do
+					addLine("Arg " .. i .. ": " .. tostring(arg))
+					if typeof(arg) == "string" and #arg <= 25 and not table.find(foundPets, arg) then
+						table.insert(foundPets, arg)
+						addLine("-> Novo nome de pet detectado: " .. arg)
+					end
+				end
+				return old(self, ...)
+			end)
+		end
+	end
+	addLine("Espionagem iniciada! Interaja com o jogo.")
+end)
