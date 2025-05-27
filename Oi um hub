@@ -1,120 +1,47 @@
--- Interface Gráfica
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local KillAuraButton = Instance.new("TextButton")
-local AutoFarmButton = Instance.new("TextButton")
-local AutoWinButton = Instance.new("TextButton")
-local TeleportButton = Instance.new("TextButton")
-local FlyButton = Instance.new("TextButton")
-local ESPButton = Instance.new("TextButton")
+-- Cria uma GUI simples para exibir mensagens do console
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local TextBox = Instance.new("TextBox", ScreenGui)
 
-ScreenGui.Parent = game.CoreGui
-ScreenGui.Name = "DeadRailsHub"
+TextBox.Size = UDim2.new(0.5, 0, 0.4, 0)
+TextBox.Position = UDim2.new(0.25, 0, 0.05, 0)
+TextBox.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+TextBox.TextColor3 = Color3.new(0, 1, 0)
+TextBox.ClearTextOnFocus = false
+TextBox.TextXAlignment = Enum.TextXAlignment.Left
+TextBox.TextYAlignment = Enum.TextYAlignment.Top
+TextBox.Font = Enum.Font.Code
+TextBox.TextSize = 14
+TextBox.MultiLine = true
+TextBox.TextWrapped = false
+TextBox.Text = "[Console Captura Inicializado]\n"
 
-Frame.Size = UDim2.new(0, 200, 0, 300)
-Frame.Position = UDim2.new(0, 100, 0, 100)
-Frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-Frame.Parent = ScreenGui
+-- Redireciona `print`, `warn` e `error`
+local originalPrint = print
+local originalWarn = warn
+local originalError = error
 
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "Dead Rails Hub"
-Title.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Parent = Frame
-
--- Função para criar botões
-local function createButton(name, positionY)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 40)
-    button.Position = UDim2.new(0, 0, 0, positionY)
-    button.Text = name
-    button.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Parent = Frame
-    return button
+function addToConsole(msg, tag)
+	TextBox.Text = TextBox.Text .. string.format("[%s] %s\n", tag, tostring(msg))
 end
 
--- Criar botões
-KillAuraButton = createButton("Ativar Kill Aura", 40)
-AutoFarmButton = createButton("Ativar Auto Farm", 90)
-AutoWinButton = createButton("Ativar Auto Win", 140)
-TeleportButton = createButton("Ativar Teleport", 190)
-FlyButton = createButton("Ativar Fly", 240)
-ESPButton = createButton("Ativar ESP", 290)
+_G.print = function(...)
+	local msg = table.concat({...}, " ")
+	addToConsole(msg, "INFO")
+	originalPrint(msg)
+end
 
--- Variáveis de controle
-local killAuraAtivo = false
-local autoFarmAtivo = false
-local autoWinAtivo = false
-local teleportAtivo = false
-local flyAtivo = false
-local espAtivo = false
+_G.warn = function(...)
+	local msg = table.concat({...}, " ")
+	addToConsole(msg, "WARN")
+	originalWarn(msg)
+end
 
--- Funções dos botões
-KillAuraButton.MouseButton1Click:Connect(function()
-    killAuraAtivo = not killAuraAtivo
-    KillAuraButton.Text = killAuraAtivo and "Desativar Kill Aura" or "Ativar Kill Aura"
-    if killAuraAtivo then
-        -- Código para ativar Kill Aura
-        -- Exemplo: loadstring(game:HttpGet("URL_DO_SCRIPT_KILL_AURA"))()
-    else
-        -- Código para desativar Kill Aura
-    end
-end)
+_G.error = function(...)
+	local msg = table.concat({...}, " ")
+	addToConsole(msg, "ERROR")
+	originalError(msg)
+end
 
-AutoFarmButton.MouseButton1Click:Connect(function()
-    autoFarmAtivo = not autoFarmAtivo
-    AutoFarmButton.Text = autoFarmAtivo and "Desativar Auto Farm" or "Ativar Auto Farm"
-    if autoFarmAtivo then
-        -- Código para ativar Auto Farm
-        -- Exemplo: loadstring(game:HttpGet("URL_DO_SCRIPT_AUTO_FARM"))()
-    else
-        -- Código para desativar Auto Farm
-    end
-end)
-
-AutoWinButton.MouseButton1Click:Connect(function()
-    autoWinAtivo = not autoWinAtivo
-    AutoWinButton.Text = autoWinAtivo and "Desativar Auto Win" or "Ativar Auto Win"
-    if autoWinAtivo then
-        -- Código para ativar Auto Win
-        -- Exemplo: loadstring(game:HttpGet("URL_DO_SCRIPT_AUTO_WIN"))()
-    else
-        -- Código para desativar Auto Win
-    end
-end)
-
-TeleportButton.MouseButton1Click:Connect(function()
-    teleportAtivo = not teleportAtivo
-    TeleportButton.Text = teleportAtivo and "Desativar Teleport" or "Ativar Teleport"
-    if teleportAtivo then
-        -- Código para ativar Teleport
-        -- Exemplo: loadstring(game:HttpGet("URL_DO_SCRIPT_TELEPORT"))()
-    else
-        -- Código para desativar Teleport
-    end
-end)
-
-FlyButton.MouseButton1Click:Connect(function()
-    flyAtivo = not flyAtivo
-    FlyButton.Text = flyAtivo and "Desativar Fly" or "Ativar Fly"
-    if flyAtivo then
-        -- Código para ativar Fly
-        -- Exemplo: loadstring(game:HttpGet("URL_DO_SCRIPT_FLY"))()
-    else
-        -- Código para desativar Fly
-    end
-end)
-
-ESPButton.MouseButton1Click:Connect(function()
-    espAtivo = not espAtivo
-    ESPButton.Text = espAtivo and "Desativar ESP" or "Ativar ESP"
-    if espAtivo then
-        -- Código para ativar ESP
-        -- Exemplo: loadstring(game:HttpGet("URL_DO_SCRIPT_ESP"))()
-    else
-        -- Código para desativar ESP
-    end
-end)
+print("Captura de print iniciada")
+warn("Aviso de teste")
+-- error("Erro de teste") -- descomente para testar
